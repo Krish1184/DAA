@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_MOVIES 100
+
+typedef struct {
+    char title[100];
+    float rating;
+    int numRatings;
+} Movie;
+
+Movie movieList[MAX_MOVIES];
+int movieCount = 0;
+
+// Function to add a movie
+void addMovie(const char *title) {
+    if (movieCount < MAX_MOVIES) {
+        strncpy(movieList[movieCount].title, title, sizeof(movieList[movieCount].title) - 1);
+        movieList[movieCount].rating = 0.0;
+        movieList[movieCount].numRatings = 0;
+        movieCount++;
+    } else {
+        printf("Movie list is full!\n");
+    }
+}
+
+// Function to rate a movie
+void rateMovie(const char *title, float rating) {
+    for (int i = 0; i < movieCount; i++) {
+        if (strcmp(movieList[i].title, title) == 0) {
+            movieList[i].rating = ((movieList[i].rating * movieList[i].numRatings) + rating) / (movieList[i].numRatings + 1);
+            movieList[i].numRatings++;
+            return;
+        }
+    }
+    printf("Movie not found!\n");
+}
+
+// Function to display movies
+void displayMovies() {
+    for (int i = 0; i < movieCount; i++) {
+        printf("Title: %s, Average Rating: %.2f\n", movieList[i].title, movieList[i].rating);
+    }
+}
+
+// Function to calculate overall average rating
+float calculateOverallAverage() {
+    float totalRating = 0.0;
+    int totalRatings = 0;
+    for (int i = 0; i < movieCount; i++) {
+        totalRating += movieList[i].rating * movieList[i].numRatings;
+        totalRatings += movieList[i].numRatings;
+    }
+    return totalRatings > 0 ? totalRating / totalRatings : 0.0;
+}
+
+// Function to swap two movies
+void swap(Movie *a, Movie *b) {
+    Movie temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Partition function for quicksort
+int partition(Movie arr[], int low, int high) {
+    float pivot = arr[high].rating; 
+    int i = (low - 1); 
+    for (int j = low; j < high; j++) {
+        if (arr[j].rating > pivot) { // Sort in descending order
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[i + 1], &arr[high]);
+    return (i + 1);
+}
+
+// Quicksort implementation
+void quickSort(Movie arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
+// Function to display sorted movies
+void displaySortedMovies() {
+    quickSort(movieList, 0, movieCount - 1);
+    displayMovies();
+}
+
+// Function to find a movie by title
+void findMovie(const char *title) {
+    for (int i = 0; i < movieCount; i++) {
+        if (strcmp(movieList[i].title, title) == 0) {
+            printf("Found: %s, Average Rating: %.2f\n", movieList[i].title, movieList[i].rating);
+            return;
+        }
+    }
+    printf("Movie not found!\n");
+}
+
+// Main function
+int main() {
+    addMovie("Inception");
+    addMovie("The Matrix");
+    addMovie("Interstellar");
+
+    rateMovie("Inception", 8.8);
+    rateMovie("Inception", 9.0);
+    rateMovie("The Matrix", 8.7);
+    rateMovie("Interstellar", 9.2);
+    
+    printf("Movies before sorting:\n");
+    displayMovies();
+    
+    printf("\nMovies after sorting:\n");
+    displaySortedMovies();
+    
+    printf("\nSearching for 'Inception':\n");
+    findMovie("Inception");
+    
+    printf("\nOverall Average Rating: %.2f\n", calculateOverallAverage());
+    
+    return 0;
+}
